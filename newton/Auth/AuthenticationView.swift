@@ -36,21 +36,31 @@ struct AuthenticationView: View {
     private func currentStateView() -> AnyView {
         switch session.state {
         case .initialized:
-            return AnyView(Button("Authenticate now") {
+            return AnyView(RippleButton(title: "Authenticate now") {
                 self.session.start()
-            })
+            }
+            .padding(.horizontal, 40))
         case .authenticating:
             return AnyView(Text("Authenticating..."))
         case .accessCodeReceived:
             return AnyView(Text("Exchanging code for access token..."))
         case .authenticated(_):
-            return AnyView(VStack {
+            return AnyView(VStack(spacing: 20) {
                 Text("Authenticated")
-                Button("Refresh"){
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.green)
+                
+                RippleButton(title: "Refresh") {
                     session.refreshAccessToken { token in
                         print(token?.token)
                     }
                 }
+                
+                RippleButton(title: "Logout", action: {
+                    session.reset()
+                })
+                .padding(.horizontal, 40)
             }.padding())
         case .failed:
             return AnyView(authenticationEnded("Authentication failed"))
@@ -62,11 +72,17 @@ struct AuthenticationView: View {
     }
 
     private func authenticationEnded(_ message: String) -> some View {
-        VStack {
+        VStack(spacing: 20) {
             Text(message)
-            Button("Reset") {
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            RippleButton(title: "Reset") {
                 self.session.reset()
             }
+            .padding(.horizontal, 40)
         }
+        .padding()
     }
 }
